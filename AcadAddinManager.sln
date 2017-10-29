@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2005
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AcadAddinManager", "AcadAddinManager.csproj", "{D64C4A0A-6F50-4BF2-9252-043256B9F8CC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D64C4A0A-6F50-4BF2-9252-043256B9F8CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D64C4A0A-6F50-4BF2-9252-043256B9F8CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D64C4A0A-6F50-4BF2-9252-043256B9F8CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D64C4A0A-6F50-4BF2-9252-043256B9F8CC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2480AF53-6AA5-43FA-9667-9CE23EFE81FF}
+	EndGlobalSection
+EndGlobal
