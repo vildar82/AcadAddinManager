@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<ApplicationPackage
+	SchemaVersion="1.0"	
+	AppVersion="1.0"
+	Name="AddinManager"
+	Description="Обновление сборок и запуск команд без перезапуска автокада."
+	ProductCode="{1AD20007-039B-4FA9-A356-9D8CDE40CC13}">
+	<CompanyDetails Name="PIK" Email="khisyametdinovvt@pik.ru"/>	
+	<Components Description="AddinManager">	   
+		<ComponentEntry 	  
+         AppName="AddinManager"         
+         ModuleName="./Contents/AcadAddinManager.dll">
+			<Commands>            
+				<Command 
+               Local="AddinManager" 
+               Global="AddinManager" 
+               Description="AddinManager" />            
+				<Command 
+               Local="AddinManagerLast" 
+               Global="AddinManagerLast" 
+               Description="AddinManagerLast" />            
+			</Commands>
+		</ComponentEntry>   
+		<ComponentEntry 
+         AppName="AddinManager"          
+         ModuleName="./AddinManager.cuix" />	  
+	</Components>      
+</ApplicationPackage>
