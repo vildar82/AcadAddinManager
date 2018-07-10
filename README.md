@@ -6,5 +6,5 @@ Copy AddinManager.Bundle to ApplicationPlugins AutoCAD: c:\ProgramData\Autodesk\
 
 ## Use
 Commands:
-AddinManager - select assembly file and command method and run it.
-AddinManagerLast - update assembly and run last selected method.
+* AddinManager - select assembly file and command method and run it.
+* AddinManagerLast - update assembly and run last selected method.
