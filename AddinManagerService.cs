@@ -89,23 +89,30 @@ namespace AcadAddinManager
 
         private static void Invoke(MethodInfo method)
         {
-            if (method.IsStatic)
+            try
             {
-                method.Invoke(null, null);
+                if (method.IsStatic)
+                {
+                    method.Invoke(null, null);
+                }
+                else
+                {
+                    var instance = Activator.CreateInstance(method.DeclaringType);
+                    method.Invoke(instance, null);
+                }
             }
-            else
+            finally 
             {
-                var instance = Activator.CreateInstance(method.DeclaringType);
-                method.Invoke(instance, null);
+                AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
             }
         }
 
         private static MethodInfo SelectMethod(string addinFile, string methodName)
         {
             resolvers = DllResolve.GetDllResolve(Path.GetDirectoryName(addinFile), SearchOption.AllDirectories);
+            AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             var addinAsm = Assembly.LoadFile(addinFile);
-            AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
             var methods = GetCommandMethods(addinAsm);
             if (methodName != null)
             {
