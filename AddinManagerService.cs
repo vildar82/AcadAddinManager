@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Windows.Forms;
+using System.Windows;
+using AcadAddinManager.Data;
+using AcadAddinManager.UI;
 using Autodesk.AutoCAD.Runtime;
+using JetBrains.Annotations;
 using NetLib.IO;
-using NetLib.WPF.Controls.Select;
 using NLog;
+using Application = Autodesk.AutoCAD.ApplicationServices.Application;
 using Exception = System.Exception;
 using Path = System.IO.Path;
 
@@ -15,11 +18,11 @@ namespace AcadAddinManager
 {
     public static class AddinManagerService
     {
-        private static string addinFile;
-        private static string addinTempFile;
-        private static List<DllResolve> resolvers = new List<DllResolve>();
-        private static MethodInfo method;
+        private static CommandMethod lastMethod;
+        private static AddinsView addinsView;
         private static ILogger Log => LogManager.GetCurrentClassLogger();
+
+        public static List<DllResolve> Resolvers { get; set; }
 
         public static void ClearAddins()
         {
@@ -36,16 +39,17 @@ namespace AcadAddinManager
             }
         }
 
-        [CommandMethod("AddinManager", CommandFlags.Modal)]
+        [CommandMethod("AddinManager", CommandFlags.Session)]
         public static void AddinManager()
         {
             try
             {
-                addinFile = SelectAddin();
-                if (string.IsNullOrEmpty(addinFile)) return;
-                addinTempFile = GetTempAddin();
-                method = SelectMethod(addinTempFile, null);
-                Invoke(method);
+                if (addinsView == null)
+                {
+                    var addinsVM = new AddinsVM();
+                    addinsView = new AddinsView(addinsVM);
+                }
+                Application.ShowModelessWindow(addinsView);
             }
             catch (OperationCanceledException)
             {
@@ -58,23 +62,34 @@ namespace AcadAddinManager
             }
         }
 
-        [CommandMethod("AddinManagerLast", CommandFlags.Modal)]
+        [CommandMethod("AddinManagerLast", CommandFlags.Session)]
         public static void AddinManagerLast()
         {
             try
             {
-                if (string.IsNullOrEmpty(addinFile))
+                if (lastMethod == null)
                 {
                     AddinManager();
                     return;
                 }
-                if (NetLib.IO.Path.IsNewestFile(addinFile, addinTempFile))
+                var addin = lastMethod.Addin;
+                if (NetLib.IO.Path.IsNewestFile(addin.AddinFile, addin.AddinTempFile))
                 {
-                    addinTempFile = GetTempAddin();
-                    method = SelectMethod(addinTempFile, method?.Name);
-                    $"Сборка обновлена - {addinFile} от {File.GetLastWriteTime(addinFile):dd.MM.yy HH:mm:ss}.".Write();
+                    var addinUpdate = GetAddin(addin.AddinTempFile);
+                    var method = addinUpdate.Commands.FirstOrDefault(m => m.Method.Name == lastMethod.Method.Name && 
+                                                             m.Command.GlobalName == lastMethod.Command.GlobalName);
+                    if (method == null)
+                    {
+                        MessageBox.Show($"Не найдена команда {lastMethod.Command.GlobalName} ({lastMethod.Method.Name}).",
+                            "AddinManager", MessageBoxButton.OK, MessageBoxImage.Error);
+                        AddinManager();
+                        return;
+                    }
+                    lastMethod.Method = method?.Method;
+                    lastMethod.Command = method?.Command;
+                    $"Сборка обновлена - {addin.AddinFile} от {File.GetLastWriteTime(addin.AddinFile):dd.MM.yy HH:mm:ss}.".Write();
                 }
-                Invoke(method);
+                Invoke(lastMethod);
             }
             catch (OperationCanceledException)
             {
@@ -87,18 +102,25 @@ namespace AcadAddinManager
             }
         }
 
-        private static void Invoke(MethodInfo method)
+        public static void Invoke(CommandMethod commandMethod)
         {
             try
             {
-                if (method.IsStatic)
+                lastMethod = commandMethod;
+                Resolvers = commandMethod.Addin.Resolvers;
+                var doc = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument;
+                var method = commandMethod.Method;
+                using (doc.LockDocument())
                 {
-                    method.Invoke(null, null);
-                }
-                else
-                {
-                    var instance = Activator.CreateInstance(method.DeclaringType);
-                    method.Invoke(instance, null);
+                    if (method.IsStatic)
+                    {
+                        method.Invoke(null, null);
+                    }
+                    else
+                    {
+                        var instance = Activator.CreateInstance(method.DeclaringType);
+                        method.Invoke(instance, null);
+                    }
                 }
             }
             finally 
@@ -107,38 +129,39 @@ namespace AcadAddinManager
             }
         }
 
-        private static MethodInfo SelectMethod(string addinFile, string methodName)
+        [NotNull]
+        public static Addin GetAddin(string addinFile)
         {
-            resolvers = DllResolve.GetDllResolve(Path.GetDirectoryName(addinFile), SearchOption.AllDirectories);
+            var addin = new Addin {AddinFile = addinFile};
+            addin.AddinTempFile = GetTempAddin(addin.AddinFile);
+            Resolvers = DllResolve.GetDllResolve(Path.GetDirectoryName(addin.AddinTempFile), SearchOption.AllDirectories);
             AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-            var addinAsm = Assembly.LoadFile(addinFile);
-            var methods = GetCommandMethods(addinAsm);
-            if (methodName != null)
-            {
-                var method = methods.FirstOrDefault(m => m.Name == methodName);
-                if (method != null)
-                    return method;
-            }
-            var items = methods.Select(s => new SelectListItem<MethodInfo>(s.Name, s)).ToList();
-            return SelectList.Select(items, "AddinManager", "Запуск команды:");
+            var addinAsm = Assembly.LoadFile(addin.AddinTempFile);
+            addin.Commands = GetCommandMethods(addinAsm);
+            return addin;
         }
 
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
-            return resolvers.FirstOrDefault(r => r.IsResolve(args.Name))?.LoadAssembly();
+            return Resolvers.FirstOrDefault(r => r.IsResolve(args.Name))?.LoadAssembly();
         }
 
-        private static List<MethodInfo> GetCommandMethods(Assembly asm)
+        [NotNull]
+        private static List<CommandMethod> GetCommandMethods(Assembly asm)
         {
             return (from type in asm.GetTypes()
                 from methodInfo in type.GetMethods().ToList()
                 let commandAtr = methodInfo.GetCustomAttributes(typeof(CommandMethodAttribute), false).FirstOrDefault()
                 where commandAtr != null
-                select methodInfo).ToList();
+                select new CommandMethod
+                {
+                    Command = (CommandMethodAttribute) commandAtr,
+                    Method = methodInfo, 
+                }).ToList();
         }
 
-        private static string GetTempAddin()
+        private static string GetTempAddin(string addinFile)
         {
             var dir = Path.GetDirectoryName(addinFile);
             var guid = Guid.NewGuid().ToString();
@@ -151,15 +174,6 @@ namespace AcadAddinManager
         private static string GetTempDir()
         {
             return Path.Combine(Path.GetTempPath(), "AcadAddinManager");
-        }
-
-        private static string SelectAddin()
-        {
-            var dlg = new OpenFileDialog
-            {
-                Title = "AddinManager - выбор сборки плагина autocad"
-            };
-            return dlg.ShowDialog() == DialogResult.OK ? dlg.FileName : null;
         }
     }
 }

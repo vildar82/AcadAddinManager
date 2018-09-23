@@ -1,0 +1,64 @@
+﻿<wpf:BaseWindow
+    x:Class="AcadAddinManager.UI.AddinsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:AcadAddinManager.UI"
+    xmlns:wpf="clr-namespace:NetLib.WPF;assembly=NetLib"
+    xmlns:data="clr-namespace:AcadAddinManager.Data"
+    xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+    d:DataContext="{d:DesignInstance local:AddinsVM}"
+    Name="Win"
+    mc:Ignorable="d"
+    Title="AddinManager">
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type local:AddinVM}">
+            <Grid VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="{Binding Name}" VerticalAlignment="Center" />
+                <Button Grid.Column="1" Content="{iconPacks:Material Delete}"
+                        Command="{Binding DataContext.RemoveAddin, ElementName=Win}"
+                        CommandParameter="{Binding}"
+                        Style="{StaticResource ListBoxHiddenBtn}" />
+            </Grid>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type data:CommandMethod}">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="dfgdfgdfg"/>
+                <TextBlock>
+                    <Run Text="{Binding Command.GlobalName}" />
+                    <Run Text="  (" />
+                    <Run Text="{Binding Method.Name}" />
+                    <Run Text=")" />
+                    <TextBlock.InputBindings>
+                        <MouseBinding Gesture="LeftDoubleClick" Command="{Binding DataContext.Start, ElementName=Win}" />
+                    </TextBlock.InputBindings>
+                </TextBlock>
+            </StackPanel>
+        </DataTemplate>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Button Grid.Row="0" Content="{iconPacks:Material Plus}" Command="{Binding AddAddin}"
+                    ToolTip="Добавить сборку" HorizontalAlignment="Center" Margin="5" />
+            <ListBox Grid.Row="1" ItemsSource="{Binding Addins}" SelectedItem="{Binding Addin}" />
+            <ListBox Grid.Row="2" ItemsSource="{Binding Addin.Addin.Commands}" SelectedItem="{Binding Command}" />
+        </Grid>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="5">
+            <Button Command="{Binding Start}" Content="{iconPacks:Material Play}" />
+        </StackPanel>
+    </Grid>
+</wpf:BaseWindow>
