@@ -1,7 +1,5 @@
 ﻿using System.IO;
 using AcadAddinManager.Data;
-using NetLib.WPF;
-using ReactiveUI;
 
 namespace AcadAddinManager.UI
 {

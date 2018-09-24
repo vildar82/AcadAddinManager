@@ -36,5 +36,5 @@ using Autodesk.AutoCAD.Runtime;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.266.34")]
-[assembly: AssemblyFileVersion("1.0.266.33")]
+[assembly: AssemblyVersion("1.0.267.52")]
+[assembly: AssemblyFileVersion("1.0.267.51")]

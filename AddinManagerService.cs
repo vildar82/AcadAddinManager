@@ -10,7 +10,6 @@ using Autodesk.AutoCAD.Runtime;
 using JetBrains.Annotations;
 using NetLib.IO;
 using NLog;
-using Application = Autodesk.AutoCAD.ApplicationServices.Application;
 using Exception = System.Exception;
 using Path = System.IO.Path;
 
@@ -49,7 +48,7 @@ namespace AcadAddinManager
                     var addinsVM = new AddinsVM();
                     addinsView = new AddinsView(addinsVM);
                 }
-                Application.ShowModelessWindow(addinsView);
+                Autodesk.AutoCAD.ApplicationServices.Core.Application.ShowModelessWindow(addinsView);
             }
             catch (OperationCanceledException)
             {
@@ -85,8 +84,8 @@ namespace AcadAddinManager
                         AddinManager();
                         return;
                     }
-                    lastMethod.Method = method?.Method;
-                    lastMethod.Command = method?.Command;
+                    lastMethod.Method = method.Method;
+                    lastMethod.Command = method.Command;
                     $"Сборка обновлена - {addin.AddinFile} от {File.GetLastWriteTime(addin.AddinFile):dd.MM.yy HH:mm:ss}.".Write();
                 }
                 Invoke(lastMethod);
@@ -138,7 +137,7 @@ namespace AcadAddinManager
             AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             var addinAsm = Assembly.LoadFile(addin.AddinTempFile);
-            addin.Commands = GetCommandMethods(addinAsm);
+            addin.Commands = GetCommandMethods(addinAsm, addin);
             return addin;
         }
 
@@ -148,7 +147,7 @@ namespace AcadAddinManager
         }
 
         [NotNull]
-        private static List<CommandMethod> GetCommandMethods(Assembly asm)
+        private static List<CommandMethod> GetCommandMethods(Assembly asm, Addin addin)
         {
             return (from type in asm.GetTypes()
                 from methodInfo in type.GetMethods().ToList()
@@ -157,8 +156,9 @@ namespace AcadAddinManager
                 select new CommandMethod
                 {
                     Command = (CommandMethodAttribute) commandAtr,
-                    Method = methodInfo, 
-                }).ToList();
+                    Method = methodInfo,
+                    Addin = addin
+                }).OrderBy(o => o.Command.GlobalName).ToList();
         }
 
         private static string GetTempAddin(string addinFile)

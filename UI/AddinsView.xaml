@@ -9,6 +9,8 @@
     xmlns:data="clr-namespace:AcadAddinManager.Data"
     xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
     d:DataContext="{d:DesignInstance local:AddinsVM}"
+    IsUnclosing="True"
+    ShowMinButton="False"
     Name="Win"
     mc:Ignorable="d"
     Title="AddinManager">
@@ -22,40 +24,47 @@
                 <TextBlock Grid.Column="0" Text="{Binding Name}" VerticalAlignment="Center" />
                 <Button Grid.Column="1" Content="{iconPacks:Material Delete}"
                         Command="{Binding DataContext.RemoveAddin, ElementName=Win}"
-                        CommandParameter="{Binding}"
+                        CommandParameter="{Binding}" Margin="1"
                         Style="{StaticResource ListBoxHiddenBtn}" />
             </Grid>
         </DataTemplate>
         <DataTemplate DataType="{x:Type data:CommandMethod}">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="dfgdfgdfg"/>
-                <TextBlock>
-                    <Run Text="{Binding Command.GlobalName}" />
-                    <Run Text="  (" />
-                    <Run Text="{Binding Method.Name}" />
-                    <Run Text=")" />
-                    <TextBlock.InputBindings>
-                        <MouseBinding Gesture="LeftDoubleClick" Command="{Binding DataContext.Start, ElementName=Win}" />
-                    </TextBlock.InputBindings>
-                </TextBlock>
-            </StackPanel>
+            <Grid HorizontalAlignment="Left">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition SharedSizeGroup="CommandName"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.InputBindings>
+                    <MouseBinding Gesture="LeftDoubleClick" Command="{Binding DataContext.Start, ElementName=Win}" />
+                </Grid.InputBindings>
+                <TextBlock Grid.Column="0" Text="{Binding Command.GlobalName, Mode=OneWay}" Margin="1"/>
+                <TextBlock Grid.Column="1" Text="метод:" Margin="10,1,8,1"/>
+                <TextBlock Grid.Column="2" Text="{Binding Method.Name, Mode=OneWay}"/>
+            </Grid>
         </DataTemplate>
     </Window.Resources>
-    <Grid>
+    <Grid Margin="5" Grid.IsSharedSizeScope="True">
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0">
+        <Grid Grid.Row="0" VerticalAlignment="Top">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <Button Grid.Row="0" Content="{iconPacks:Material Plus}" Command="{Binding AddAddin}"
-                    ToolTip="Добавить сборку" HorizontalAlignment="Center" Margin="5" />
-            <ListBox Grid.Row="1" ItemsSource="{Binding Addins}" SelectedItem="{Binding Addin}" />
-            <ListBox Grid.Row="2" ItemsSource="{Binding Addin.Addin.Commands}" SelectedItem="{Binding Command}" />
+            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock Text="Сборки: " VerticalAlignment="Center"/>
+                <Button Content="{iconPacks:Material Plus}" Command="{Binding AddAddin}"
+                        ToolTip="Добавить сборку" HorizontalAlignment="Center" Margin="5" />
+            </StackPanel>
+            <ListBox Grid.Row="1" ItemsSource="{Binding Addins}" SelectedItem="{Binding Addin}" VerticalAlignment="Top"
+                     Grid.IsSharedSizeScope="True"/>
+            <TextBlock Grid.Row="2" Text="Команды:" HorizontalAlignment="Center" Margin="-30,10,0,0"/>
+            <ListBox Grid.Row="3" ItemsSource="{Binding Addin.Addin.Commands}" SelectedItem="{Binding Command}" />
         </Grid>
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="5">
             <Button Command="{Binding Start}" Content="{iconPacks:Material Play}" />
