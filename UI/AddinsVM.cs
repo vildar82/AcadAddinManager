@@ -90,6 +90,14 @@ namespace AcadAddinManager.UI
         private void AddAddinExec()
         {
             var file = SelectAddin();
+            var addinExist = Addins.FirstOrDefault(a => a.Addin.AddinFile.EqualsIgnoreCase(file));
+            if (addinExist != null)
+            {
+                ShowMessage("Такая сборка уже есть");
+                Addin = addinExist;
+                return;
+            }
+
             var addin = AddinManagerService.GetAddin(file);
             Addins.Insert(0, new AddinVM(addin));
             fileData.Data.AddinFiles.Insert(0, file);

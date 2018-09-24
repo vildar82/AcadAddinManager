@@ -31,16 +31,16 @@
         <DataTemplate DataType="{x:Type data:CommandMethod}">
             <Grid HorizontalAlignment="Left">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition SharedSizeGroup="CommandName"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition SharedSizeGroup="CommandName" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Grid.InputBindings>
                     <MouseBinding Gesture="LeftDoubleClick" Command="{Binding DataContext.Start, ElementName=Win}" />
                 </Grid.InputBindings>
-                <TextBlock Grid.Column="0" Text="{Binding Command.GlobalName, Mode=OneWay}" Margin="1"/>
-                <TextBlock Grid.Column="1" Text="метод:" Margin="10,1,8,1"/>
-                <TextBlock Grid.Column="2" Text="{Binding Method.Name, Mode=OneWay}"/>
+                <TextBlock Grid.Column="0" Text="{Binding Command.GlobalName, Mode=OneWay}" Margin="1" />
+                <TextBlock Grid.Column="1" Text="метод:" Margin="10,1,8,1" />
+                <TextBlock Grid.Column="2" Text="{Binding Method.Name, Mode=OneWay}" />
             </Grid>
         </DataTemplate>
     </Window.Resources>
@@ -53,18 +53,23 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
+                <RowDefinition Height="2*"/>
             </Grid.RowDefinitions>
             <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center">
-                <TextBlock Text="Сборки: " VerticalAlignment="Center"/>
+                <TextBlock Text="Сборки: " VerticalAlignment="Center" />
                 <Button Content="{iconPacks:Material Plus}" Command="{Binding AddAddin}"
                         ToolTip="Добавить сборку" HorizontalAlignment="Center" Margin="5" />
             </StackPanel>
-            <ListBox Grid.Row="1" ItemsSource="{Binding Addins}" SelectedItem="{Binding Addin}" VerticalAlignment="Top"
-                     Grid.IsSharedSizeScope="True"/>
-            <TextBlock Grid.Row="2" Text="Команды:" HorizontalAlignment="Center" Margin="-30,10,0,0"/>
-            <ListBox Grid.Row="3" ItemsSource="{Binding Addin.Addin.Commands}" SelectedItem="{Binding Command}" />
+            <ListBox Grid.Row="1" ItemsSource="{Binding Addins}" SelectedItem="{Binding Addin}"
+                     Grid.IsSharedSizeScope="True" />
+            <Grid Grid.Row="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Text="Команды:" HorizontalAlignment="Center" Margin="-30,10,0,0"/>
+                <ListBox Grid.Row="1" ItemsSource="{Binding Addin.Addin.Commands}" SelectedItem="{Binding Command}"/>
+            </Grid>
         </Grid>
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="5">
             <Button Command="{Binding Start}" Content="{iconPacks:Material Play}" />
