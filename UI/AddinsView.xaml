@@ -21,7 +21,8 @@
                     <ColumnDefinition />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="{Binding Name}" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="0" Text="{Binding Name}" VerticalAlignment="Center" 
+                           ToolTip="{Binding Addin.AddinFile}"/>
                 <Button Grid.Column="1" Content="{iconPacks:Material Delete}"
                         Command="{Binding DataContext.RemoveAddin, ElementName=Win}"
                         CommandParameter="{Binding}" Margin="1"

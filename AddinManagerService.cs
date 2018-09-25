@@ -74,7 +74,7 @@ namespace AcadAddinManager
                 var addin = lastMethod.Addin;
                 if (NetLib.IO.Path.IsNewestFile(addin.AddinFile, addin.AddinTempFile))
                 {
-                    var addinUpdate = GetAddin(addin.AddinTempFile);
+                    var addinUpdate = GetAddin(addin.AddinFile);
                     var method = addinUpdate.Commands.FirstOrDefault(m => m.Method.Name == lastMethod.Method.Name && 
                                                              m.Command.GlobalName == lastMethod.Command.GlobalName);
                     if (method == null)
@@ -84,8 +84,7 @@ namespace AcadAddinManager
                         AddinManager();
                         return;
                     }
-                    lastMethod.Method = method.Method;
-                    lastMethod.Command = method.Command;
+                    lastMethod = method;
                     $"Сборка обновлена - {addin.AddinFile} от {File.GetLastWriteTime(addin.AddinFile):dd.MM.yy HH:mm:ss}.".Write();
                 }
                 Invoke(lastMethod);
