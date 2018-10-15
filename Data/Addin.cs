@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using NetLib.IO;
-
-namespace AcadAddinManager.Data
+﻿namespace AcadAddinManager.Data
 {
+    using System;
+    using System.Collections.Generic;
+    using NetLib.IO;
+
     public class Addin
     {
         public List<CommandMethod> Commands { get; set; }

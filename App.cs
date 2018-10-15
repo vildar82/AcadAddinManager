@@ -1,7 +1,7 @@
-﻿using Autodesk.AutoCAD.Runtime;
-
-namespace AcadAddinManager
+﻿namespace AcadAddinManager
 {
+    using Autodesk.AutoCAD.Runtime;
+
     class App : IExtensionApplication
     {
         public void Initialize()

@@ -1,20 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Windows;
-using AcadAddinManager.Data;
-using AcadAddinManager.UI;
-using Autodesk.AutoCAD.Runtime;
-using JetBrains.Annotations;
-using NetLib.IO;
-using NLog;
-using Exception = System.Exception;
-using Path = System.IO.Path;
-
-namespace AcadAddinManager
+﻿namespace AcadAddinManager
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Reflection;
+    using System.Windows;
+    using Data;
+    using UI;
+    using Autodesk.AutoCAD.Runtime;
+    using JetBrains.Annotations;
+    using NetLib.IO;
+    using NLog;
+    using Exception = System.Exception;
+    using Path = System.IO.Path;
+
     public static class AddinManagerService
     {
         private static CommandMethod lastMethod;
@@ -48,6 +48,7 @@ namespace AcadAddinManager
                     var addinsVM = new AddinsVM();
                     addinsView = new AddinsView(addinsVM);
                 }
+
                 Autodesk.AutoCAD.ApplicationServices.Core.Application.ShowModelessWindow(addinsView);
             }
             catch (OperationCanceledException)
@@ -71,6 +72,7 @@ namespace AcadAddinManager
                     AddinManager();
                     return;
                 }
+
                 var addin = lastMethod.Addin;
                 if (NetLib.IO.Path.IsNewestFile(addin.AddinFile, addin.AddinTempFile))
                 {
@@ -84,14 +86,15 @@ namespace AcadAddinManager
                         AddinManager();
                         return;
                     }
+
                     lastMethod = method;
                     $"Сборка обновлена - {addin.AddinFile} от {File.GetLastWriteTime(addin.AddinFile):dd.MM.yy HH:mm:ss}.".Write();
                 }
+
                 Invoke(lastMethod);
             }
             catch (OperationCanceledException)
             {
-
             }
             catch (Exception ex)
             {

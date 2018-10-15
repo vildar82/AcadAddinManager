@@ -1,8 +1,8 @@
-﻿using System.IO;
-using AcadAddinManager.Data;
-
-namespace AcadAddinManager.UI
+﻿namespace AcadAddinManager.UI
 {
+    using System.IO;
+    using Data;
+
     public class AddinVM
     {
         public AddinVM(Addin addin)

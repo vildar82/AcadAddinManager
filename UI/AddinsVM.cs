@@ -1,16 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Threading.Tasks;
-using AcadAddinManager.Data;
-using Microsoft.Win32;
-using NetLib;
-using NetLib.WPF;
-using ReactiveUI;
-
-namespace AcadAddinManager.UI
+﻿namespace AcadAddinManager.UI
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reactive.Linq;
+    using System.Threading.Tasks;
+    using Data;
+    using Microsoft.Win32;
+    using NetLib;
+    using NetLib.WPF;
+    using ReactiveUI;
+    using ReactiveUI.Legacy;
+
     public class AddinsVM : BaseViewModel
     {
         private LocalFileData<AddinsData> fileData;
