@@ -5,7 +5,8 @@
     /// </summary>
     public partial class AddinsView
     {
-        public AddinsView(AddinsVM vm) : base (vm)
+        public AddinsView(AddinsVM vm)
+            : base (vm)
         {
             InitializeComponent();
         }

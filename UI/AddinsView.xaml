@@ -57,7 +57,9 @@
                 <RowDefinition Height="2*"/>
             </Grid.RowDefinitions>
             <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center">
-                <TextBlock Text="Сборки: " VerticalAlignment="Center" />
+                <TextBlock Text="Сборки: " VerticalAlignment="Center" Margin="1"/>
+                <TextBox Text="{Binding Search, Delay=300, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource TbFilter}" Margin="1" MinWidth="80"/>
                 <Button Content="{iconPacks:Material Plus}" Command="{Binding AddAddin}"
                         ToolTip="Добавить сборку" HorizontalAlignment="Center" Margin="5" />
             </StackPanel>
@@ -68,8 +70,12 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition />
                 </Grid.RowDefinitions>
-                <TextBlock Grid.Row="0" Text="Команды:" HorizontalAlignment="Center" Margin="-30,10,0,0"/>
-                <ListBox Grid.Row="1" ItemsSource="{Binding Addin.Addin.Commands}" SelectedItem="{Binding Command}"/>
+                <StackPanel Orientation="Horizontal" Grid.Row="0" HorizontalAlignment="Center">
+                    <TextBlock Text="Команды: " HorizontalAlignment="Center" Margin="-30,10,0,0" VerticalAlignment="Center"/>
+                    <TextBox Text="{Binding Addin.Filter, Delay=300, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource TbFilter}" Margin="1" MinWidth="80"/>
+                </StackPanel>
+                <ListBox Grid.Row="1" ItemsSource="{Binding Addin.Commands}" SelectedItem="{Binding Command}"/>
             </Grid>
         </Grid>
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="5">
