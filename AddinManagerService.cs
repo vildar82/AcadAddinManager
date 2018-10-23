@@ -12,6 +12,7 @@
     using JetBrains.Annotations;
     using NetLib.IO;
     using NLog;
+    using Application = Autodesk.AutoCAD.ApplicationServices.Application;
     using Exception = System.Exception;
     using Path = System.IO.Path;
 
@@ -72,12 +73,11 @@
                     AddinManager();
                     return;
                 }
-
-                var addin = lastMethod.Addin;
-                if (NetLib.IO.Path.IsNewestFile(addin.AddinFile, addin.AddinTempFile))
+                
+                if (NetLib.IO.Path.IsNewestFile(lastMethod.Addin.AddinFile, lastMethod.Addin.AddinTempFile))
                 {
-                    var addinUpdate = GetAddin(addin.AddinFile);
-                    var method = addinUpdate.Commands.FirstOrDefault(m => m.Method.Name == lastMethod.Method.Name && 
+                    lastMethod.Addin = GetAddin(lastMethod.Addin.AddinFile);
+                    var method = lastMethod.Addin.Commands.FirstOrDefault(m => m.Method.Name == lastMethod.Method.Name && 
                                                              m.Command.GlobalName == lastMethod.Command.GlobalName);
                     if (method == null)
                     {
@@ -88,7 +88,7 @@
                     }
 
                     lastMethod = method;
-                    $"Сборка обновлена - {addin.AddinFile} от {File.GetLastWriteTime(addin.AddinFile):dd.MM.yy HH:mm:ss}.".Write();
+                    $"Сборка обновлена - {lastMethod.Addin.AddinFile} от {File.GetLastWriteTime(lastMethod.Addin.AddinFile):dd.MM.yy HH:mm:ss}.".Write();
                 }
 
                 Invoke(lastMethod);
@@ -105,12 +105,19 @@
 
         public static void Invoke(CommandMethod commandMethod)
         {
+            lastMethod = commandMethod;
+            Resolvers = commandMethod.Addin.Resolvers;
+            Application.Idle += InvokeOnIdle;
+        }
+
+        private static void InvokeOnIdle(object sender, EventArgs e)
+        {
+            Application.Idle -= InvokeOnIdle;
             try
             {
-                lastMethod = commandMethod;
-                Resolvers = commandMethod.Addin.Resolvers;
                 var doc = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument;
-                var method = commandMethod.Method;
+                LoadResolvers(Resolvers);
+                var method = lastMethod.Method;
                 using (doc.LockDocument())
                 {
                     if (method.IsStatic)
@@ -135,7 +142,8 @@
         {
             var addin = new Addin {AddinFile = addinFile};
             addin.AddinTempFile = GetTempAddin(addin.AddinFile);
-            Resolvers = DllResolve.GetDllResolve(Path.GetDirectoryName(addin.AddinTempFile), SearchOption.AllDirectories);
+            addin.Resolvers = DllResolve.GetDllResolve(Path.GetDirectoryName(addin.AddinTempFile), SearchOption.AllDirectories);
+            Resolvers = addin.Resolvers;
             AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             var addinAsm = Assembly.LoadFile(addin.AddinTempFile);
@@ -145,7 +153,16 @@
 
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
-            return Resolvers.FirstOrDefault(r => r.IsResolve(args.Name))?.LoadAssembly();
+            try
+            {
+                return Resolvers.FirstOrDefault(r => r.IsResolve(args.Name))?.LoadAssembly();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                ex.Message.Write();
+                return null;
+            }
         }
 
         [NotNull]
@@ -176,6 +193,22 @@
         private static string GetTempDir()
         {
             return Path.Combine(Path.GetTempPath(), "AcadAddinManager");
+        }
+        
+        private static void LoadResolvers(List<DllResolve> resolvers)
+        {
+            foreach (var dllResolve in resolvers)
+            {
+                try
+                {
+                    Assembly.LoadFrom(dllResolve.DllFile);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex);
+                    ex.Message.Write();
+                }
+            }
         }
     }
 }
