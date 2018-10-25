@@ -142,7 +142,8 @@
         {
             var addin = new Addin {AddinFile = addinFile};
             addin.AddinTempFile = GetTempAddin(addin.AddinFile);
-            addin.Resolvers = DllResolve.GetDllResolve(Path.GetDirectoryName(addin.AddinTempFile), SearchOption.AllDirectories);
+            addin.Resolvers = DllResolve.GetDllResolve(Path.GetDirectoryName(addin.AddinTempFile),
+                SearchOption.AllDirectories, "dll", "exe");
             Resolvers = addin.Resolvers;
             AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;

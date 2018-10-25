@@ -116,9 +116,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Costura.Fody">
-      <Version>3.1.4</Version>
+      <Version>3.1.6</Version>
     </PackageReference>
-    <PackageReference Include="NetLib" Version="1.1.15" />
+    <PackageReference Include="NetLib" Version="1.1.18" />
+    <PackageReference Update="Fody" Version="3.2.13" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
