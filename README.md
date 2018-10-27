@@ -9,4 +9,4 @@ Commands:
 * AddinManager - select assembly file and command method and run it.
 * AddinManagerLast - update assembly and run last selected method.
 
-![Image of Yaktocat](https://user-images.githubusercontent.com/1446481/45940807-bfbb3a80-bfe3-11e8-8b15-18a25f31b420.png)
+![Image](https://user-images.githubusercontent.com/1446481/45940807-bfbb3a80-bfe3-11e8-8b15-18a25f31b420.png)
