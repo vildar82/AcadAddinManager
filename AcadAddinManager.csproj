@@ -118,8 +118,10 @@
     <PackageReference Include="Costura.Fody">
       <Version>3.1.6</Version>
     </PackageReference>
-    <PackageReference Include="NetLib" Version="1.1.20" />
-    <PackageReference Update="Fody" Version="3.2.13" />
+    <PackageReference Include="NetLib" Version="1.1.67" />
+    <PackageReference Update="Fody" Version="3.3.0" />
+    <PackageReference Update="Nerdbank.GitVersioning" Version="2.2.33" />
+    <PackageReference Update="PropertyChanged.Fody" Version="2.5.14" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

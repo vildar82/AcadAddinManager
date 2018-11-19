@@ -74,6 +74,7 @@
                     <TextBlock Text="Команды: " HorizontalAlignment="Center" Margin="-30,10,0,0" VerticalAlignment="Center"/>
                     <TextBox Text="{Binding Addin.Filter, Delay=300, UpdateSourceTrigger=PropertyChanged}"
                              Style="{StaticResource TbFilter}" Margin="1" MinWidth="80"/>
+                    <Button Content="{iconPacks:Material Update}" Margin="1" Command="{Binding UpdateCommands}"/>
                 </StackPanel>
                 <ListBox Grid.Row="1" ItemsSource="{Binding Addin.Commands}" SelectedItem="{Binding Command}"/>
             </Grid>

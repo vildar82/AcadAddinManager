@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reactive;
     using System.Reactive.Linq;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
@@ -28,9 +29,11 @@
         public IReactiveDerivedList<AddinVM> Addins { get; set; }
         public AddinVM Addin { get; set; }
         public CommandMethod Command { get; set; }
-        public ReactiveCommand Start { get; set; }
-        public ReactiveCommand RemoveAddin { get; set; }
-        public ReactiveCommand AddAddin { get; set; }
+        public ReactiveCommand<Unit,Unit> Start { get; set; }
+        public ReactiveCommand<AddinVM,Unit> RemoveAddin { get; set; }
+        public ReactiveCommand<Unit,Unit> AddAddin { get; set; }
+
+        public ReactiveCommand<Unit,Unit> UpdateCommands { get; set; }
 
         private async void Init()
         {
@@ -74,6 +77,8 @@
                 .ObserveOn(dispatcher)
                 .Subscribe(s => 
                     Addins.Reset());
+
+            UpdateCommands = CreateCommand(UpdateCommandsExec);
         }
 
         private bool filter(AddinVM ad)
@@ -136,6 +141,11 @@
                 Filter = "Net assembly files (*.dll) | *.dll;"
             };
             return dlg.ShowDialog() == true ? dlg.FileName : null;
+        }
+        
+        private void UpdateCommandsExec()
+        {
+            Addin?.Update();
         }
     }
 }

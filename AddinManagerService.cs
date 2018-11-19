@@ -73,25 +73,8 @@
                     AddinManager();
                     return;
                 }
-                
-                if (NetLib.IO.Path.IsNewestFile(lastMethod.Addin.AddinFile, lastMethod.Addin.AddinTempFile))
-                {
-                    lastMethod.Addin = GetAddin(lastMethod.Addin.AddinFile);
-                    var method = lastMethod.Addin.Commands.FirstOrDefault(m => m.Method.Name == lastMethod.Method.Name && 
-                                                             m.Command.GlobalName == lastMethod.Command.GlobalName);
-                    if (method == null)
-                    {
-                        MessageBox.Show($"Не найдена команда {lastMethod.Command.GlobalName} ({lastMethod.Method.Name}).",
-                            "AddinManager", MessageBoxButton.OK, MessageBoxImage.Error);
-                        AddinManager();
-                        return;
-                    }
 
-                    lastMethod = method;
-                    $"Сборка обновлена - {lastMethod.Addin.AddinFile} от {File.GetLastWriteTime(lastMethod.Addin.AddinFile):dd.MM.yy HH:mm:ss}.".Write();
-                }
-
-                Invoke(lastMethod);
+                UpdateAndInvoke(lastMethod);
             }
             catch (OperationCanceledException)
             {
@@ -101,6 +84,28 @@
                 Log.Error(ex);
                 throw;
             }
+        }
+
+        public static void UpdateAndInvoke(CommandMethod command)
+        {
+            if (NetLib.IO.Path.IsNewestFile(lastMethod.Addin.AddinFile, lastMethod.Addin.AddinTempFile))
+            {
+                lastMethod.Addin = GetAddin(lastMethod.Addin.AddinFile);
+                var method = lastMethod.Addin.Commands.FirstOrDefault(m => m.Method.Name == lastMethod.Method.Name && 
+                                                                           m.Command.GlobalName == lastMethod.Command.GlobalName);
+                if (method == null)
+                {
+                    MessageBox.Show($"Не найдена команда {lastMethod.Command.GlobalName} ({lastMethod.Method.Name}).",
+                        "AddinManager", MessageBoxButton.OK, MessageBoxImage.Error);
+                    AddinManager();
+                    return;
+                }
+
+                lastMethod = method;
+                $"Сборка обновлена - {lastMethod.Addin.AddinFile} от {File.GetLastWriteTime(lastMethod.Addin.AddinFile):dd.MM.yy HH:mm:ss}.".Write();
+            }
+
+            Invoke(lastMethod);
         }
 
         public static void Invoke(CommandMethod commandMethod)

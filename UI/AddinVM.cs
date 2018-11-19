@@ -29,7 +29,7 @@
             Commands = AllCommands.CreateDerivedCollection(s => s, filter);
         }
 
-        public Addin Addin { get; }
+        public Addin Addin { get; set; }
         public string Name { get; set; }
         
         public string Filter { get; set; }
@@ -39,6 +39,16 @@
         private bool filter(CommandMethod com)
         {
             return Filter.IsNullOrEmpty() || Regex.IsMatch(com.Command.GlobalName, Filter, RegexOptions.IgnoreCase);
+        }
+
+        public void Update()
+        {
+            Addin = AddinManagerService.GetAddin(Addin.AddinFile);
+            using (AllCommands.SuppressChangeNotifications())
+            {
+                AllCommands.Clear();
+                AllCommands.AddRange(Addin.Commands);
+            }
         }
     }
 }
