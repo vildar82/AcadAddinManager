@@ -2,17 +2,18 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Linq;
     using System.Reactive;
     using System.Reactive.Linq;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using Data;
+    using DynamicData;
     using Microsoft.Win32;
     using NetLib;
     using NetLib.WPF;
     using ReactiveUI;
-    using ReactiveUI.Legacy;
 
     public class AddinsVM : BaseViewModel
     {
@@ -25,29 +26,45 @@
         }
 
         public string Search { get; set; }
-        public ReactiveList<AddinVM> AllAddins { get; set; }
-        public IReactiveDerivedList<AddinVM> Addins { get; set; }
-        public AddinVM Addin { get; set; }
-        public CommandMethod Command { get; set; }
-        public ReactiveCommand<Unit,Unit> Start { get; set; }
-        public ReactiveCommand<AddinVM,Unit> RemoveAddin { get; set; }
-        public ReactiveCommand<Unit,Unit> AddAddin { get; set; }
 
-        public ReactiveCommand<Unit,Unit> UpdateCommands { get; set; }
+        public SourceList<AddinVM> AllAddins { get; set; }
+
+        public ReadOnlyObservableCollection<AddinVM> Addins { get; set; }
+
+        public AddinVM Addin { get; set; }
+
+        public CommandMethod Command { get; set; }
+
+        public ReactiveCommand<Unit, Unit> Start { get; set; }
+
+        public ReactiveCommand<AddinVM, Unit> RemoveAddin { get; set; }
+
+        public ReactiveCommand<Unit, Unit> AddAddin { get; set; }
+
+        public ReactiveCommand<Unit, Unit> UpdateCommands { get; set; }
 
         private async void Init()
         {
             var addins = await LoadAddins();
-            AllAddins = new ReactiveList<AddinVM>(addins.Select(s => new AddinVM(s)));
-            Addins = AllAddins.CreateDerivedCollection(s => s, filter);
+            AllAddins = new SourceList<AddinVM>();
+            AllAddins.AddRange(addins.Select(s => new AddinVM(s)));
+
+            var searchObs = this.WhenAnyValue(v => v.Search).Skip(1).Throttle(TimeSpan.FromMilliseconds(300)).Select(s => true);
+            AllAddins.Connect()
+                .Filter(filter)
+                .AutoRefreshOnObservable(c => searchObs)
+                .Bind(out var data)
+                .Subscribe();
+            Addins = data;
+
             if (!fileData.Data.LastAddin.IsNullOrEmpty())
             {
-                Addin = AllAddins.FirstOrDefault(a => a.Addin.AddinFile.EqualsIgnoreCase(fileData.Data.LastAddin));
+                Addin = AllAddins.Items.FirstOrDefault(a => a.Addin.AddinFile.EqualsIgnoreCase(fileData.Data.LastAddin));
                 if (Addin != null && !fileData.Data.LastCommand.IsNullOrEmpty())
                     Command = Addin.Addin.Commands.FirstOrDefault(
                         c => c.Command.GlobalName == fileData.Data.LastCommand);
             }
-            
+
             var canStart = this.WhenAnyValue(v => v.Command).Select(s => s != null);
             Start = CreateCommand(() =>
             {
@@ -73,10 +90,6 @@
             AddAddin = CreateCommand(AddAddinExec);
             if (!errors.IsNullOrEmpty())
                 ShowMessage(errors, "Ошибка загрузки файлов сборок");
-            this.WhenAnyValue(v => v.Search).Skip(1).Throttle(TimeSpan.FromMilliseconds(300))
-                .ObserveOn(dispatcher)
-                .Subscribe(s => 
-                    Addins.Reset());
 
             UpdateCommands = CreateCommand(UpdateCommandsExec);
         }
@@ -113,14 +126,14 @@
         /// <inheritdoc />
         public override void OnClosing()
         {
-            fileData.Data.AddinFiles = AllAddins.Select(s => s.Addin.AddinFile).ToList();
+            fileData.Data.AddinFiles = AllAddins.Items.Select(s => s.Addin.AddinFile).ToList();
             fileData.TrySave();
         }
 
         private void AddAddinExec()
         {
             var file = SelectAddin();
-            var addinExist = AllAddins.FirstOrDefault(a => a.Addin.AddinFile.EqualsIgnoreCase(file));
+            var addinExist = AllAddins.Items.FirstOrDefault(a => a.Addin.AddinFile.EqualsIgnoreCase(file));
             if (addinExist != null)
             {
                 ShowMessage("Такая сборка уже есть");
@@ -140,9 +153,9 @@
                 Title = "AddinManager - выбор сборки плагина autocad",
                 Filter = "Net assembly files (*.dll) | *.dll;"
             };
-            return dlg.ShowDialog() == true ? dlg.FileName : null;
+            return dlg.ShowDialog() == true ? dlg.FileName : throw new OperationCanceledException();
         }
-        
+
         private void UpdateCommandsExec()
         {
             Addin?.Update();
